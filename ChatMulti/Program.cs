@@ -13,11 +13,12 @@ namespace ChatMulti
   
 
 
-    class Program
+  public class Program
     {
+        public static bool serverstatus = false;
         public static Dictionary<string,TcpClient> Clients = new Dictionary<string,TcpClient>();
         public static Stack<string> GroupMessage = new Stack<string>();
-        public static void Main(string[] args)
+        public static  void Main(string[] args)
         {
             try
             {
@@ -27,8 +28,10 @@ namespace ChatMulti
                 TcpClient clientSocket = default(TcpClient);
                 serversocket.Start();
                 Console.WriteLine("Chat Room ");
+                serverstatus = true;
                 while (true)
                 {
+                    
                     counter += 1;
                     clientSocket = serversocket.AcceptTcpClient();
                     HandleClient Client = new HandleClient();
