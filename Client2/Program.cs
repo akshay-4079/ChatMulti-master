@@ -69,12 +69,20 @@ namespace ChatClient
 
                 while (connect)
                 {
+                    try {
+                        serverstream.Read(inStream, 0, inStream.Length);
+                        string returndata = System.Text.Encoding.ASCII.GetString(inStream);
+                        string[] message = returndata.Split('\0');
+                        Console.WriteLine(message[0]);
 
-                    serverstream.Read(inStream, 0, 1000);
-                    string returndata = System.Text.Encoding.ASCII.GetString(inStream);
-                    Console.WriteLine(returndata);
 
-                }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Goodbye You Just Disconnected");
+                        Environment.Exit(1);
+                    }
+                    }
             }
 
 

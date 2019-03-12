@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace ChatMulti
 {
@@ -190,25 +191,36 @@ namespace ChatMulti
 
         private static void ReturnClients(NetworkStream networkStream)
         {
-            byte[] bytesTo;
+            byte[] bytesTo=new byte[500];
             string message = "Please Find the name of the connected entered below";
             bytesTo = System.Text.Encoding.ASCII.GetBytes(message);
             networkStream.Write(bytesTo, 0, bytesTo.Length);
             networkStream.Flush();
-           
+            int count=0;
             foreach (KeyValuePair<string, TcpClient> entry in Clients)
             {
-                try {
-                    bytesTo = new byte[500];
-                    string Message = entry.Key + "/";
-                    bytesTo = System.Text.Encoding.ASCII.GetBytes(Message);
-                    networkStream.Write(bytesTo, 0, bytesTo.Length);
-                    networkStream.Flush();
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                while (true)
+                {
+                    if (watch.ElapsedMilliseconds == 300)
+                    { break; }
+                }
+                watch.Stop();
+                    try
+                    {
+                        ++count;
+                        string Message = entry.Key + "/";
+                        bytesTo = System.Text.Encoding.ASCII.GetBytes(Message);
+                        networkStream.Write(bytesTo, 0, bytesTo.Length);
+                        networkStream.Flush();
+                        if (count == Clients.Count + 1) { break; }
+                    }
+                    catch { Console.WriteLine("Missing TCP Client"); }
                 
-                }
-                catch { Console.WriteLine("Missing TCP Client"); }
-                }
-
+               
+            }
+            
          
         }
         private static void RemoveClient(NetworkStream networkStream,string Name)
