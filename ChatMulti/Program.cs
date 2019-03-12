@@ -14,24 +14,30 @@ namespace ChatMulti
 
     class Program
     {
-     public static Dictionary<string,TcpClient> Clients = new Dictionary<string,TcpClient>();
+        public static Dictionary<string,TcpClient> Clients = new Dictionary<string,TcpClient>();
         public static Stack<string> GroupMessage = new Stack<string>();
         public static void Main(string[] args)
         {
-
-            IPAddress ServerAddress = IPAddress.Parse("192.168.10.189");
-            TcpListener serversocket = new TcpListener(ServerAddress, 8888);
-            int counter = 0;
-            TcpClient clientSocket = default(TcpClient);
-            serversocket.Start();
-            Console.WriteLine("Chat Room ");
-            while (true) {
-                counter += 1;
-                clientSocket = serversocket.AcceptTcpClient();
-                HandleClient Client = new HandleClient();
-                Client.StartClient(clientSocket, counter);
+            try
+            {
+                IPAddress ServerAddress = IPAddress.Parse("192.168.10.189");
+                TcpListener serversocket = new TcpListener(ServerAddress, 8888);
+                int counter = 0;
+                TcpClient clientSocket = default(TcpClient);
+                serversocket.Start();
+                Console.WriteLine("Chat Room ");
+                while (true)
+                {
+                    counter += 1;
+                    clientSocket = serversocket.AcceptTcpClient();
+                    HandleClient Client = new HandleClient();
+                    Client.StartClient(clientSocket, counter);
+                }
             }
-        
+            catch
+            {
+                Console.WriteLine("Error please Restart the server");
+            }
         }
 
 
@@ -78,28 +84,39 @@ namespace ChatMulti
         }
         void Speak()
         {
+            //This segment of code stops the for loop once GroupMessage has ended, If the try is omitted the broadcast is sent on an infinite loop
             try
             {
                 foreach (string entry in GroupMessage)
                 {
+
                     GroupMessage.Pop();
                     foreach (KeyValuePair<string, TcpClient> entry1 in Clients)
                     {
-                        byte[] bytesTo = new byte[500];
-                        NetworkStream stream = entry1.Value.GetStream();
-                        bytesTo = System.Text.Encoding.ASCII.GetBytes(entry);
-                        stream.Write(bytesTo, 0, bytesTo.Length);
-                        stream.Flush();
-                      
+                        try
+                        {
+                            byte[] bytesTo = new byte[500];
+                            NetworkStream stream = entry1.Value.GetStream();
+                            bytesTo = System.Text.Encoding.ASCII.GetBytes(entry);
+                            stream.Write(bytesTo, 0, bytesTo.Length);
+                            stream.Flush();
 
+
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Tcp Client is missing");
+                        }
                     }
                 }
             }
             catch
             {
-                Console.WriteLine("Error Occured");
+                Console.WriteLine("End of Message Stack");
             }
-        }
+                }
+            
+        
         private void Chat()
         {
             string returndata;
@@ -164,9 +181,9 @@ namespace ChatMulti
                     //networkStream.Flush();
 
                 }
-                catch (Exception ex)
+                catch(Exception)
                 {
-                    Console.WriteLine(ex.ToString());
+                    Client.Close();
                 }
             }
         }
@@ -178,18 +195,19 @@ namespace ChatMulti
             bytesTo = System.Text.Encoding.ASCII.GetBytes(message);
             networkStream.Write(bytesTo, 0, bytesTo.Length);
             networkStream.Flush();
-            bytesTo = new byte[500];
+           
             foreach (KeyValuePair<string, TcpClient> entry in Clients)
             {
-
-                bytesTo = System.Text.Encoding.ASCII.GetBytes(entry.Key);
-                networkStream.Write(bytesTo, 0, bytesTo.Length);
-                bytesTo = new byte[500];
-                bytesTo = System.Text.Encoding.ASCII.GetBytes("\n");
-                networkStream.Write(bytesTo, 0, bytesTo.Length);
-                networkStream.Flush();
-                bytesTo = new byte[500];
-            }
+                try {
+                    bytesTo = new byte[500];
+                    string Message = entry.Key + "/";
+                    bytesTo = System.Text.Encoding.ASCII.GetBytes(Message);
+                    networkStream.Write(bytesTo, 0, bytesTo.Length);
+                    networkStream.Flush();
+                
+                }
+                catch { Console.WriteLine("Missing TCP Client"); }
+                }
 
          
         }
@@ -198,12 +216,19 @@ namespace ChatMulti
            
             foreach (KeyValuePair<string, TcpClient> entry in Clients)
             {
-                if (Name.Equals(entry.Key, StringComparison.CurrentCulture)){
+                try
+                {
+                    if (Name.Equals(entry.Key, StringComparison.CurrentCulture))
+                    {
 
-                    Clients.Remove(entry.Key);
-                    Console.WriteLine($"{Name} just disconnected");
+                        Clients.Remove(entry.Key);
+                        Console.WriteLine($"{Name} just disconnected");
+                    }
                 }
-
+                catch
+                {
+                    Console.WriteLine("Couldnt Remove the Client");
+                }
             }
 
            

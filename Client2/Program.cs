@@ -43,15 +43,15 @@ namespace ChatClient
                         Console.WriteLine("Enter Message");
                         Response = Console.ReadLine();
                     }
-                   else if (Response.ToLower() == "exit")
+                    else if (Response.ToLower() == "exit")
                     {
                         Console.WriteLine("Press Yes To Confirm");
-                        if (Console.ReadLine().ToLower()=="y")
+                        if (Console.ReadLine().ToLower() == "y")
                         {
-                            Response ="ByeFromChatRoom";
+                            Response = "ByeFromChatRoom";
                             bytesTo = System.Text.Encoding.ASCII.GetBytes(Name + '*' + Response);
                             serverstream.Write(bytesTo, 0, bytesTo.Length);
-                 
+
                         }
                         else
                         {
@@ -59,8 +59,9 @@ namespace ChatClient
                             Response = Console.ReadLine();
                         }
                     }
-                    bytesTo = System.Text.Encoding.ASCII.GetBytes(Name+'*'+Response);
+                    bytesTo = System.Text.Encoding.ASCII.GetBytes(Name + '*' + Response);
                     serverstream.Write(bytesTo, 0, bytesTo.Length);
+                    serverstream.Flush();
                 }
             }
             void Listen()
@@ -75,16 +76,17 @@ namespace ChatClient
 
                 }
             }
+
+
+
         }
-
-
-    }
-    class Program
-    {
-        public static void Main(string[] args)
+        class Program
         {
-            ChatClient client = new ChatClient();
-            client.MakeCLient();
+            public static void Main(string[] args)
+            {
+                ChatClient client = new ChatClient();
+                client.MakeCLient();
+            }
         }
     }
 }
